@@ -15,13 +15,27 @@ CURRENT = '{}.{}'.format(*sys.version_info[:2])
 CURRENT_FULL = '{}.{}.{}'.format(*sys.version_info[:3])
 
 
-@pytest.fixture
-def asdf_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+ASDF_ENV_VARS = ('ASDF_DATA_DIR', 'ASDF_ROOT')
+
+
+@pytest.fixture(autouse=True)
+def _isolate_asdf_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the developer's real asdf settings out of the tests."""
+    for env_var in ASDF_ENV_VARS:
+        monkeypatch.delenv(env_var, raising=False)
+
+
+@pytest.fixture(params=ASDF_ENV_VARS)
+def asdf_root(
+    request: pytest.FixtureRequest,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> Path:
     """A fake asdf root whose only python install is the running one."""
     bin_dir = tmp_path / 'installs' / 'python' / CURRENT_FULL / 'bin'
     bin_dir.mkdir(parents=True)
     (bin_dir / 'python').symlink_to(sys.executable)
-    monkeypatch.setenv('ASDF_ROOT', str(tmp_path))
+    monkeypatch.setenv(request.param, str(tmp_path))
     return tmp_path
 
 
@@ -71,7 +85,7 @@ def test_default_falls_back_to_builtin(
 def test_missing_asdf_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv('ASDF_ROOT', str(tmp_path / 'nope'))
+    monkeypatch.setenv('ASDF_DATA_DIR', str(tmp_path / 'nope'))
     with pytest.raises(RuntimeError, match='failed to find interpreter'):
         _discover('asdf-strict', CURRENT, tmp_path)
 

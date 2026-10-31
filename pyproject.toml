@@ -30,7 +30,7 @@ requires-python = '>=3.11'
 dependencies = [
     'tox>=4',
     'virtualenv>=20.21',
-    'asdf-inspect>=0.1,<0.2',
+    'asdf-inspect>=0.2,<0.3',
 ]
 
 [project.urls]

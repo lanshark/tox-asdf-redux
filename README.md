@@ -19,7 +19,8 @@ pip install tox-asdf-redux
 The plugin registers two [virtualenv discovery][discovery] plugins and tells
 tox to use one of them via `VIRTUALENV_DISCOVERY`. When a tox environment asks
 for e.g. `py312`, `python3.12` or `3.12`, the newest matching interpreter under
-`$ASDF_ROOT/installs/python` (default `~/.asdf`) is used.
+`$ASDF_DATA_DIR/installs/python` is used (default `~/.asdf`; `ASDF_ROOT`
+is also honoured for backward compatibility).
 
 ## Configuration
 
