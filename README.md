@@ -48,6 +48,18 @@ uv run pytest
 uv run tox
 ```
 
+Coverage (includes the tox subprocesses started by the tests):
+
+```bash
+uv run coverage run -m pytest
+uv run coverage combine
+uv run coverage report
+```
+
+CI combines coverage from every Python version and shows it on the workflow
+run's summary page; an HTML report is attached as the `coverage-html`
+artifact.
+
 ## Releasing
 
 1. Bump `version` in `pyproject.toml` (`uv version --bump minor`), commit.

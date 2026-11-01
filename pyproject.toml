@@ -48,6 +48,7 @@ asdf-strict = '_tox_asdf_redux.discovery:AsdfStrict'
 [dependency-groups]
 dev = [
     'pytest>=8',
+    'coverage>=7.10',
     'flake8>=7',
     'isort>=6',
 ]
@@ -66,6 +67,16 @@ known_third_party = ['asdf_inspect']
 [tool.pytest.ini_options]
 minversion = '8.0'
 testpaths = ['tests']
+
+[tool.coverage.run]
+source_pkgs = ['_tox_asdf_redux']
+branch = true
+# also measure the tox subprocesses the plugin tests start
+patch = ['subprocess']
+
+[tool.coverage.report]
+show_missing = true
+exclude_also = ['if TYPE_CHECKING:']
 
 [tool.tox]
 requires = ['tox>=4.22']

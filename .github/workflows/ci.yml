@@ -23,7 +23,35 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --locked
-      - run: uv run pytest
+      - run: uv run coverage run -m pytest
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-data-${{ matrix.python-version }}
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error
+
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-data-*
+          merge-multiple: true
+      - run: uv sync --locked
+      - name: Combine and report
+        run: |
+          uv run coverage combine
+          uv run coverage report
+          uv run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+          uv run coverage html
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-html
+          path: htmlcov/
 
   lint:
     runs-on: ubuntu-latest
