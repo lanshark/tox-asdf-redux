@@ -63,11 +63,33 @@ CI fails if total coverage drops below 90% (`fail_under` in `pyproject.toml`).
 
 ## Releasing
 
-1. Bump `version` in `pyproject.toml` (`uv version --bump minor`), commit.
-2. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`.
+`main` only accepts changes through pull requests, so the version bump goes
+through a PR before tagging:
 
-The `Publish to PyPI` workflow runs CI, checks that the tag matches the project
-version, builds with `uv build` and publishes using PyPI trusted publishing.
+1. Bump the version on a branch and open a PR:
+
+   ```bash
+   git checkout -b release-X.Y.Z
+   uv version --bump patch   # or minor / major
+   git commit -am "Release X.Y.Z"
+   git push -u origin release-X.Y.Z
+   ```
+
+2. Merge the PR once CI passes.
+3. Tag the merged `main` and push the tag:
+
+   ```bash
+   git checkout main && git pull
+   git tag -a vX.Y.Z -m "tox-asdf-redux X.Y.Z"
+   git push origin vX.Y.Z
+   ```
+
+4. Create a GitHub release for the tag with the release notes.
+
+Pushing the tag starts the `Publish to PyPI` workflow. It runs CI, checks that
+the tag matches the version in `pyproject.toml`, builds with `uv build` and
+publishes using PyPI trusted publishing. Always tag after the merge, so the
+tagged commit is on `main`.
 
 NOTE: Adapted from [tox-pyenv-redux][tox-pyenv-redux].
 
