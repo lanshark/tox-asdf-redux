@@ -1,34 +1,59 @@
 [build-system]
-requires = ['poetry-core']
-build-backend = 'poetry.core.masonry.api'
+requires = ['uv_build>=0.9,<0.14']
+build-backend = 'uv_build'
 
-[tool.poetry]
+[project]
 name = 'tox-asdf-redux'
-version = '0.1.0'
+version = '0.2.0'
 description = 'A tox plugin using asdf to find Python executables'
-license = 'MIT'
-authors = ['Scott Sharkey <ssharkey@lanshark.com>']
 readme = 'README.md'
-homepage = 'https://github.com/lanshark/tox-asdf-redux'
-repository = 'https://github.com/lanshark/tox-asdf-redux'
-keywords = ['tox', 'asdf']
+license = 'MIT'
+license-files = ['LICENSE']
+authors = [{name = 'Scott Sharkey', email = 'ssharkey@lanshark.com'}]
+keywords = ['tox', 'asdf', 'virtualenv']
 classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
     'Framework :: tox',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+    'Programming Language :: Python :: 3.15',
     'Topic :: Software Development :: Libraries',
     'Topic :: Software Development :: Testing',
     'Topic :: Utilities',
 ]
-packages = [{include = '_tox_asdf_redux', from = 'src'}]
+requires-python = '>=3.11'
+dependencies = [
+    'tox>=4',
+    'virtualenv>=20.21',
+    'asdf-inspect>=0.2,<0.3',
+]
 
-[tool.poetry.plugins.tox]
+[project.urls]
+Homepage = 'https://github.com/lanshark/tox-asdf-redux'
+Repository = 'https://github.com/lanshark/tox-asdf-redux'
+Issues = 'https://github.com/lanshark/tox-asdf-redux/issues'
+
+[project.entry-points.tox]
 asdf-redux = '_tox_asdf_redux.plugin'
 
-[tool.poetry.dependencies]
-python = '^3.7'
-tox = '*'
-asdf-inspect = '~0.1'
+[project.entry-points.'virtualenv.discovery']
+asdf = '_tox_asdf_redux.discovery:Asdf'
+asdf-strict = '_tox_asdf_redux.discovery:AsdfStrict'
+
+[dependency-groups]
+dev = [
+    'pytest>=8',
+    'flake8>=7',
+    'isort>=6',
+]
+
+[tool.uv.build-backend]
+module-name = '_tox_asdf_redux'
 
 [tool.isort]
 lines_after_imports = 2
@@ -39,34 +64,26 @@ known_first_party = ['_tox_asdf_redux']
 known_third_party = ['asdf_inspect']
 
 [tool.pytest.ini_options]
-minversion = '7.0'
+minversion = '8.0'
 testpaths = ['tests']
 
 [tool.tox]
-legacy_tox_ini = '''
-[tox]
-envlist =
-    py37
-    py38
-    py39
-    py310
-    py311
-    flake8
-    isort
-isolated_build = true
+requires = ['tox>=4.22']
+env_list = ['3.15', '3.14', '3.13', '3.12', '3.11', 'flake8', 'isort']
 
-[testenv]
-deps =
-    pytest
-commands = pytest {posargs}
+[tool.tox.env_run_base]
+description = 'run tests under {base_python}'
+dependency_groups = ['dev']
+commands = [['pytest', {replace = 'posargs', extend = true}]]
 
-[testenv:flake8]
+[tool.tox.env.flake8]
+description = 'run flake8'
 skip_install = true
-deps = flake8
-commands = flake8 {posargs}
+deps = ['flake8']
+commands = [['flake8', {replace = 'posargs', extend = true}]]
 
-[testenv:isort]
+[tool.tox.env.isort]
+description = 'check import ordering'
 skip_install = true
-deps = isort
-commands = isort {posargs:. -c}
-'''
+deps = ['isort']
+commands = [['isort', {replace = 'posargs', default = ['.', '--check-only', '--diff'], extend = true}]]
