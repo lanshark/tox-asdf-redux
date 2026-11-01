@@ -45,10 +45,13 @@ jobs:
       - name: Combine and report
         run: |
           uv run coverage combine
+          # produce the summary and HTML report even if the threshold fails
+          uv run coverage report --format=markdown --fail-under=0 >> "$GITHUB_STEP_SUMMARY"
+          uv run coverage html --fail-under=0
+          # enforce fail_under from pyproject.toml
           uv run coverage report
-          uv run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
-          uv run coverage html
       - uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: coverage-html
           path: htmlcov/
